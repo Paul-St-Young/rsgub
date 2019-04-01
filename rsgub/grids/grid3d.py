@@ -33,12 +33,32 @@ class RegularGrid3D:
       self._dg is not None
     ])
     return initialized
-  def get_grid(self):
-    """Get regular grid points.
+  def get_xyz(self):
+    """Get regular grid axes. Memory-light description of grid.
 
     Return:
       np.array: rgvecs, regular grid points
     """
+    if not self._initialized():
+      raise RuntimeError('must initialize grid origin and spacing')
+    ndim = 3
+    xyz = []
+    for idim in range(ndim):
+      xmin = self._gmin[idim]
+      dx = self._dg[idim]
+      nx = self._ng[idim]
+      myx = np.arange(xmin, xmin+nx*dx, dx)
+      assert len(myx) == nx
+      xyz.append(myx)
+    return xyz
+  def get_grid(self):
+    """Get regular grid points. Memory-heavy description of grid.
+
+    Return:
+      np.array: rgvecs, regular grid points
+    """
+    if not self._initialized():
+      raise RuntimeError('must initialize grid origin and spacing')
     ndim = 3
     nxyz = [np.arange(self._ng[idim], dtype=int) for idim in range(ndim)]
     upos = np.stack(
