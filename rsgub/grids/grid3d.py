@@ -69,6 +69,19 @@ class RegularGrid3D:
       msg = '%s not on grid given tol=%e' % (str(qvec), tol)
       raise RuntimeError(msg)
     return np.ravel_multi_index(idx3d.astype(int), self._ng)
+  def findall(self, qvecs):
+    """Vectorized version of find. Fast and furious i.e. no checking.
+    If this function fails, then fall back to find.
+
+    Args:
+      qvecs (np.array): an array of grid points to be found
+    Return:
+      np.array: array of indices
+    """
+    idx3d = np.around((qvecs-self._gmin)/self._dg).astype(int)
+    ng = self._ng
+    idx1d = idx3d[:, 0]*ng[0]*ng[1] + idx3d[:, 1]*ng[1] + idx3d[:, 2]
+    return idx1d
   def add(self, qvecs, vals, icol=0, tol=1e-2):
     """Add data to the grid.
 
