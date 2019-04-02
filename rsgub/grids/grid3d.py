@@ -10,9 +10,9 @@ class RegularGrid3D:
     Args:
       ng (np.array): number of grid points (3,) vector of ints
       ncol (int, optional): number of data columns, default is 1
-      dtype (type): type of data columns, default is float
-      gmin (np.array, optional): origin (3,) vector of floats
-      dg (np.array, optional): spacing (3,) vector of floats
+      dtype (type, optional): type of data columns, default is float
+      gmin (np.array, optional): origin (3,) vector of floats, default is None
+      dg (np.array, optional): spacing (3,) vector of floats, default is None
     """
     # define grid
     self._gmin = gmin
@@ -38,6 +38,10 @@ class RegularGrid3D:
 
     Return:
       (np.array, np.array, np.array): (x, y, z) grid axes
+    Example:
+      >>> xyz = rsg.get_xyz()
+      >>> val = rsg.get_col()
+      >>> fval = RegularGridInterpolator(xyz, val.reshape(rsg.get_ng()))
     """
     if not self._initialized():
       raise RuntimeError('must initialize grid origin and spacing')
@@ -67,6 +71,8 @@ class RegularGrid3D:
     ).reshape(-1, 3)
     rgvecs = self._gmin + self._dg*upos
     return rgvecs
+  def get_ng(self):
+    return self._ng
   def get_col(self, icol=0):
     """Get a column of data from the regular grid.
 
