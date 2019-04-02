@@ -23,7 +23,7 @@ class RegularGrid3D:
     self._cols = np.zeros([ntot, ncol], dtype=dtype)
     self._cols[:] = np.nan
   def _initialized(self):
-    """Check if the grid structure is defined
+    """Check if the grid structure is defined.
 
     Return:
       bool: True if initialized
@@ -37,7 +37,7 @@ class RegularGrid3D:
     """Get regular grid axes. Memory-light description of grid.
 
     Return:
-      np.array: rgvecs, regular grid points
+      (np.array, np.array, np.array): (x, y, z) grid axes
     """
     if not self._initialized():
       raise RuntimeError('must initialize grid origin and spacing')
@@ -68,7 +68,7 @@ class RegularGrid3D:
     rgvecs = self._gmin + self._dg*upos
     return rgvecs
   def get_col(self, icol=0):
-    """Get a column of data from the regular grid
+    """Get a column of data from the regular grid.
 
     Return:
       np.array: vals, array of scalars
