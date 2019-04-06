@@ -151,7 +151,7 @@ class RegularGrid3D:
     self._gmin = origin
     self._cols = rgrid.ravel()[:, np.newaxis]
   def write_cube(self, fcube, icol=0, force=False):
-    if os.path.isfile(fcube):
+    if os.path.isfile(fcube) and (not force):
       msg = 'refusing to overwrite %s;' % fcube
       msg += ' use force if you have to.'
       raise RuntimeError(msg)
