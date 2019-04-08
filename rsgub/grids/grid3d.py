@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from copy import copy
 
 class RegularGrid3D:
   def __init__(self, ng, ncol=1, dtype=float, gmin=None, dg=None):
@@ -74,7 +75,11 @@ class RegularGrid3D:
     rgvecs = self._gmin + self._dg*upos
     return rgvecs
   def get_ng(self):
-    return self._ng
+    return copy(self._ng)
+  def get_gmin(self):
+    return copy(self._gmin)
+  def get_dg(self):
+    return copy(self._dg)
   def get_col(self, icol=0):
     """Get a column of data from the regular grid.
 
