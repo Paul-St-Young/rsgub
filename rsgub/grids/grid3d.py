@@ -20,6 +20,7 @@ class RegularGrid3D:
     self._dg = dg
     self._ng = ng
     # add empty columns
+    self._ncol = ncol
     ntot = np.prod(ng)  # total number of grid points
     self._cols = np.zeros([ntot, ncol], dtype=dtype)
     self._cols[:] = np.nan
@@ -80,6 +81,8 @@ class RegularGrid3D:
     return copy(self._gmin)
   def get_dg(self):
     return copy(self._dg)
+  def get_ncol(self):
+    return copy(self._ncol)
   def get_col(self, icol=0):
     """Get a column of data from the regular grid.
 
