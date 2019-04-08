@@ -22,6 +22,8 @@ class RegularGrid3D:
     ntot = np.prod(ng)  # total number of grid points
     self._cols = np.zeros([ntot, ncol], dtype=dtype)
     self._cols[:] = np.nan
+    # track filled data
+    self._filled = np.zeros([ntot, ncol], dtype=bool)
   def _initialized(self):
     """Check if the grid structure is defined.
 
@@ -108,7 +110,7 @@ class RegularGrid3D:
     ng = self._ng
     idx1d = idx3d[:, 0]*ng[0]*ng[1] + idx3d[:, 1]*ng[1] + idx3d[:, 2]
     return idx1d
-  def add(self, qvecs, vals, icol=0, tol=1e-2):
+  def add(self, qvecs, vals, icol=0, tol=1e-2, force=False):
     """Add data to the grid.
 
     Args:
@@ -116,13 +118,19 @@ class RegularGrid3D:
       vals (np.array): values at given coordinates
       icol (int, optional): which column to add to, default is 0
       tol (float, optional): tolerance for grid points, default is 1e-2
+      force (bool, optional): skip check
     """
     if not self._initialized():
       raise RuntimeError('must initialize before adding data')
     for qvec, val in zip(qvecs, vals):
       # find closest grid point
       idx = self.find(qvec, tol=tol)
-      self._cols[idx, icol] = val
+      if (self._filled[idx, icol]) and (not force):
+        msg = 'refuse to overwrite data; use force if you must'
+        raise RuntimeError(msg)
+      else:
+        self._cols[idx, icol] = val
+        self._filled[idx, icol] = True
   def scatter(self, icol=0):
     import matplotlib.pyplot as plt
     from qharv.inspect import volumetric
