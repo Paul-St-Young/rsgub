@@ -152,7 +152,7 @@ class RegularGrid3D:
     plt.show()
   def init_from_cube(self, fcube, force=False):
     from qharv.inspect.volumetric import read_gaussian_cube
-    if self._initialized and (not force):
+    if self._initialized() and (not force):
       msg = 'refusing to initialize twice;'
       msg += ' use force if you have to.'
       raise RuntimeError(msg)
