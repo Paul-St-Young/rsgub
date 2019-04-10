@@ -162,7 +162,7 @@ class RegularGrid3D:
     rgrid = entry['data']
     raxes = entry['axes']
     origin = entry['origin']
-    self._ng = rgrid.shape
+    self._ng = np.array(rgrid.shape, dtype=int)
     self._dg = np.diag(raxes)
     self._gmin = origin
     self._cols = rgrid.ravel()[:, np.newaxis]
