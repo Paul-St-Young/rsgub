@@ -139,6 +139,16 @@ class RegularGrid3D:
       else:
         self._cols[idx, icol] = val
         self._filled[idx, icol] = True
+  def add_comp(self, qvecs, vals, fcomp, icol=0, tol=1e-2):
+    for qvec, val in zip(qvecs, vals):
+      # find closest grid point
+      idx = self.find(qvec, tol=tol)
+      if (self._filled[idx, icol]):
+        val0 = self._cols[idx, icol]
+        self._cols[idx, icol] = fcomp(val, val0)
+      else:
+        self._cols[idx, icol] = val
+        self._filled[idx, icol] = True
   def scatter(self, icol=0):
     import matplotlib.pyplot as plt
     from qharv.inspect import volumetric
