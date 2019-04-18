@@ -94,11 +94,8 @@ def interpolate_gpr(rsg, icol=0, **kwargs):
     dx = rsg.get_dg()[0]
     kernel = RBF(length_scale=1.5*dx)
   optimizer = kwargs.pop('optimizer', None)
-  if optimizer is None:
-    def optimizer(obj_func, initial_theta, bounds):
-      const = 1.0
-      return initial_theta, const
-  gpr = GaussianProcessRegressor(kernel=kernel, optimizer=optimizer, **kwargs)
+  kwargs['optimizer'] = optimizer
+  gpr = GaussianProcessRegressor(kernel=kernel, **kwargs)
   gpr.fit(rsg.get_grid(), rsg.get_col(icol))
 
   def fval(qvecs1):
