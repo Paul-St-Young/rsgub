@@ -73,3 +73,34 @@ def interpolate_rbf(rsg, icol=0, **kwargs):
     qx, qy, qz = qvecs.T
     return rbfi(qx, qy, qz)
   return fval
+
+def interpolate_gpr(rsg, icol=0, **kwargs):
+  """Interpolate regular grid using Gaussian process regression.
+
+  default kernel is Gaussian with a width that is 1.5*[x grid spacing]
+  default optimizer is no optimization
+
+  Args:
+    rsg (grids.grid3d.RegularGrid3D): regular grid filled with data
+    icol (int, optional): data column to interpolate, default is 0
+    kwargs (dict, optional): keyword arguments for gpr
+  Return:
+    callable: on np.array of size (npt, ndim=3)
+  """
+  from sklearn.gaussian_process import GaussianProcessRegressor
+  kernel = kwargs.pop('kernel', None)
+  if kernel is None:  # use default kernel
+    from sklearn.gaussian_process.kernels import RBF
+    dx = rsg.get_dg()[0]
+    kernel = RBF(length_scale=1.5*dx)
+  optimizer = kwargs.pop('optimizer', None)
+  if optimizer is None:
+    def optimizer(obj_func, initial_theta, bounds):
+      const = 1.0
+      return initial_theta, const
+  gpr = GaussianProcessRegressor(kernel=kernel, optimizer=optimizer, **kwargs)
+  gpr.fit(rsg.get_grid(), rsg.get_col(icol))
+
+  def fval(qvecs1):
+    return gpr.predict(qvecs1)
+  return fval
