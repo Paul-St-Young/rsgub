@@ -55,7 +55,7 @@ class RegularGrid3D:
       xmin = self._gmin[idim]
       dx = self._dg[idim]
       nx = self._ng[idim]
-      myx = np.arange(xmin, xmin+nx*dx, dx)
+      myx = np.arange(xmin, xmin+nx*dx-1e-6, dx)
       assert len(myx) == nx
       xyz.append(myx)
     return xyz
