@@ -1,25 +1,32 @@
 import numpy as np
 
-def resample(rsg, ng1, icol=0, method='rgi', **kwargs):
+def resample_at(qvecs, rsg, icol=0, method='rgi', **kwargs):
+  """Resample grid value at given vectors in unit box (qvecs)
+
+  Args:
+    qvecs (np.array): vectors inside a unit box
+    rsg (grids.grid3d.RegularGrid3D): regular grid filled with data
+    icol (int, optional): data column to interpolate, default is 0
+    method (str, optional): 'rgi' (RegularGridInterpolator) or 'rbf' (Rbf),
+      default is 'rgi'
+    kwargs (dict, optional): keyword arguments for interpolation method
+  """
+  interpolate = choose_interpolate(method)
+  fval = interpolate(rsg, icol, **kwargs)
+  return fval(qvecs)
+
+def resample(rsg, ng1, method='rgi', **kwargs):
   """Interpolate regular grid and resample with a difference spacing
 
   Args:
     rsg (grids.grid3d.RegularGrid3D): regular grid filled with data
     ng1 (np.array): 3 integer numbers of grid points along each dimension
-    icol (int, optional): data column to interpolate, default is 0
     method (str, optional): 'rgi' (RegularGridInterpolator) or 'rbf' (Rbf),
       default is 'rgi'
     kwargs (dict, optional): keyword arguments for interpolation method
   Return:
     grids.grid3d.RegularGrid3D: resampled data on a grid
   """
-  # choose interpolation method
-  if method == 'rgi':
-    interpolate = interpolate_rgi
-  elif method == 'rbf':
-    interpolate = interpolate_rbf
-  else:
-    raise RuntimeError('unknown interpolation method %s' % method)
   # resize grid
   from rsgub.grids.grid3d import RegularGrid3D
   gmin = rsg.get_gmin()
@@ -31,9 +38,18 @@ def resample(rsg, ng1, icol=0, method='rgi', **kwargs):
   # transfer data with interpolation
   qvecs1 = rsg1.get_grid()
   for icol in range(ncol):
-    fval = interpolate(rsg, icol)
-    rsg1.add(qvecs1, fval(qvecs1), icol=icol)
+    vals = resample_at(qvecs1, rsg, icol=icol, method=method, **kwargs)
+    rsg1.add(qvecs1, vals, icol=icol)
   return rsg1
+
+def choose_interpolate(method):
+  if method == 'rgi':
+    interpolate = interpolate_rgi
+  elif method == 'rbf':
+    interpolate = interpolate_rbf
+  else:
+    raise RuntimeError('unknown interpolation method %s' % method)
+  return interpolate
 
 def interpolate_rgi(rsg, icol=0, **kwargs):
   """Interpolate regular grid using RegularGridInterpolator.
