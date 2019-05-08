@@ -90,6 +90,16 @@ class RegularGrid3D:
       np.array: vals, array of scalars
     """
     return self._cols[:, icol]
+  def set_col(self, vals, icol):
+    """Manually set the values of a column
+
+    Args:
+      np.array: vals, array of scalars
+    """
+    ntot = self._cols.shape[0]
+    if len(vals) != ntot:
+      raise RuntimeError('wrong column size')
+    self._cols[:, icol] = vals
   def find(self, qvec, tol=1e-2):
     """Find the index for a grid point.
 
