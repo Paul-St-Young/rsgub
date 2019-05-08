@@ -15,6 +15,7 @@ class RegularGrid3D:
       gmin (np.array, optional): origin (3,) vector of floats, default is None
       dg (np.array, optional): spacing (3,) vector of floats, default is None
     """
+    self.dtype = dtype
     # define grid
     self._gmin = gmin
     self._dg = dg
@@ -37,6 +38,8 @@ class RegularGrid3D:
       self._dg is not None
     ])
     return initialized
+  def filled_all(self):
+    return self._filled.all()
   def get_xyz(self):
     """Get regular grid axes. Memory-light description of grid.
 
@@ -90,16 +93,23 @@ class RegularGrid3D:
       np.array: vals, array of scalars
     """
     return self._cols[:, icol]
-  def set_col(self, vals, icol):
+  def set_col(self, vals, icol=0, force=False):
     """Manually set the values of a column
 
     Args:
-      np.array: vals, array of scalars
+      vals (np.array): vals, array of scalars
+      icol (int, optional): column to set, default is 0
+      force (bool, optional): force set, default is False
     """
     ntot = self._cols.shape[0]
     if len(vals) != ntot:
       raise RuntimeError('wrong column size')
+    curcol = self._cols[:, icol]
+    if (self._filled[:, icol].any()) and (not force):
+      msg = 'column %d has data; use force if you have to' % icol
+      raise RuntimeError(msg)
     self._cols[:, icol] = vals
+    self._filled[:, icol] = True
   def find(self, qvec, tol=1e-2):
     """Find the index for a grid point.
 

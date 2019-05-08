@@ -25,23 +25,26 @@ def pbc_unit_box(rsg, icol=0, atol=1e-3):
   #  same spacing but 2 bigger along each dimension
   ng1 = np.array(rsg.get_ng())+2
   gmin1 = gmin-dg
-  rsg1 = RegularGrid3D(ng1, gmin=gmin1, dg=dg)
+  rsg1 = RegularGrid3D(ng1, gmin=gmin1, dg=dg, dtype=rsg.dtype)
   # add original data
-  rsg1.add(kvecs, vals, icol=icol)
+  rsg1.add(kvecs, vals)
   # add PBC data
   vals1 = rsg1.get_col()
-  nsel = np.isnan(vals1)
+  if rsg.dtype is int:
+    mynan = np.array([1, 2], dtype=rsg.dtype)
+    mynan[:] = np.nan
+    nsel = vals1 == mynan[0]
+  else:
+    nsel = np.isnan(vals1)
   myidx = np.arange(len(vals1))[nsel]
   kvecs2fill = rsg1.get_grid()[nsel]
   for i, kvec in enumerate(kvecs2fill):
     kvec1 = pos_in_box(kvec, 1.)
     idx = rsg.find(kvec1)
     vals1[myidx[i]] = vals[idx]
-  rsg1.set_col(vals1, 0)
+  rsg1.set_col(vals1, force=True)
   # check success
-  vals1 = rsg1.get_col()
-  success = ~np.isnan(vals1).any()
-  assert success
+  assert rsg1.filled_all()
   return rsg1
 
 def pbc_unit_box_one_side(rsg, atol=1e-3):
