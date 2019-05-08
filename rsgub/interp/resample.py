@@ -67,7 +67,7 @@ def interpolate_rbf(rsg, icol=0, **kwargs):
   data[:, :3] = rsg.get_grid()
   data[:, 3] = rvals
   x, y, z, d = data.T
-  rbfi = Rbf(x, y, z, d)
+  rbfi = Rbf(x, y, z, d, **kwargs)
 
   def fval(qvecs):
     qx, qy, qz = qvecs.T
