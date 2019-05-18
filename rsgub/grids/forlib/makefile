@@ -1,7 +1,7 @@
 export FC=gfortran
 export CC=gcc
 
-mods=fill_qk
+mods=fill_qk find_gvecs
 
 all:
 	for name in $(mods); do \
