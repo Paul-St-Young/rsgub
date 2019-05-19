@@ -64,3 +64,63 @@ integer function igvec(gvec, ridx, gmin, gmax, gs,&
   idx1d = idx3d(3)+idx3d(2)*gs(3)+idx3d(1)*gs(3)*gs(2)+1
   igvec = ridx(idx1d)
 end
+
+complex*16 function rhok(tgvec, gvecs, cmat,&
+  ndim, npw, norb)
+  implicit none
+  integer, intent(in) :: tgvec(ndim)        ! target gvector
+  integer, intent(in) :: gvecs(npw, ndim)   ! PW basis
+  complex*16, intent(in) :: cmat(norb, npw) ! orbitals in PW
+  integer, intent(in) :: ndim, npw, norb    ! dimensions
+
+  ! temporary variables
+  integer, allocatable :: ridx(:)
+  integer :: gplusq(ndim)
+  integer :: gmin(ndim), gmax(ndim), gs(ndim)
+  integer :: idx3d(ndim), idx1d, idx
+  integer :: igvec, ig, ngs, iorb
+  complex*16 :: c1, c2
+
+  ! get regular grid dimensions
+  gmin = minval(gvecs, dim=1)
+  gmax = maxval(gvecs, dim=1)
+  gs = gmax-gmin+1
+  ngs = product(gs)
+  ! create regular grid index map
+  allocate(ridx(ngs))
+  call map_gvectors_to_grid(gvecs, gmin, gs, ngs, npw, ndim, ridx)
+
+  ! calculate electron density
+  rhok = cmplx(0, 0)
+  do iorb=1,norb
+    do ig=1,npw
+      gplusq(:) = gvecs(ig, :) - tgvec(:)
+      idx = igvec(gplusq, ridx, gmin, gmax, gs, ndim, ngs)
+      if (idx.eq.-1) cycle
+      c1 = cmat(iorb, ig)
+      c2 = cmat(iorb, idx)
+      rhok = rhok + conjg(c1)*c2
+    enddo
+  enddo
+  deallocate(ridx)
+end
+
+subroutine calc_rhok(tgvecs, gvecs, cmat,&
+  ng, ndim, npw, norb,&
+  rks)
+  implicit none
+  integer, intent(in) :: tgvecs(ng, ndim)    ! target gvectors
+  integer, intent(in) :: gvecs(npw, ndim)    ! PW basis
+  complex*16, intent(in) :: cmat(norb, npw)  ! orbitals in PW
+  integer, intent(in) :: ng, ndim, npw, norb ! dimensions
+  complex*16, intent(out) :: rks(ng)         ! rhok at targets
+
+  ! temporary variables
+  complex*16 rhok
+  integer ig
+
+
+  do ig=1,ng
+    rks(ig) = rhok(tgvecs(ig,:), gvecs, cmat, ndim, npw, norb)
+  enddo
+end
