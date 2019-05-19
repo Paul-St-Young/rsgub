@@ -66,29 +66,23 @@ integer function igvec(gvec, ridx, gmin, gmax, gs,&
 end
 
 complex*16 function rhok(tgvec, gvecs, cmat,&
-  ndim, npw, norb)
+  gmin, gmax, gs, ridx,&
+  ndim, npw, norb, ngs)
   implicit none
-  integer, intent(in) :: tgvec(ndim)        ! target gvector
-  integer, intent(in) :: gvecs(npw, ndim)   ! PW basis
-  complex*16, intent(in) :: cmat(norb, npw) ! orbitals in PW
-  integer, intent(in) :: ndim, npw, norb    ! dimensions
+  integer, intent(in) :: tgvec(ndim)          ! target gvector
+  integer, intent(in) :: gvecs(npw, ndim)     ! PW basis
+  complex*16, intent(in) :: cmat(norb, npw)   ! orbitals in PW
+  integer, intent(in) :: gmin(ndim)           ! regular grid minima
+  integer, intent(in) :: gmax(ndim)           ! regular grid maxima
+  integer, intent(in) :: gs(ndim)             ! regular grid sizes
+  integer, intent(in) :: ridx(ngs)            ! regular grid index map
+  integer, intent(in) :: ndim, npw, norb, ngs ! dimensions
 
   ! temporary variables
-  integer, allocatable :: ridx(:)
   integer :: gplusq(ndim)
-  integer :: gmin(ndim), gmax(ndim), gs(ndim)
-  integer :: idx3d(ndim), idx1d, idx
-  integer :: igvec, ig, ngs, iorb
+  integer :: idx
+  integer :: igvec, ig, iorb
   complex*16 :: c1, c2
-
-  ! get regular grid dimensions
-  gmin = minval(gvecs, dim=1)
-  gmax = maxval(gvecs, dim=1)
-  gs = gmax-gmin+1
-  ngs = product(gs)
-  ! create regular grid index map
-  allocate(ridx(ngs))
-  call map_gvectors_to_grid(gvecs, gmin, gs, ngs, npw, ndim, ridx)
 
   ! calculate electron density
   rhok = cmplx(0, 0)
@@ -102,12 +96,14 @@ complex*16 function rhok(tgvec, gvecs, cmat,&
       rhok = rhok + conjg(c1)*c2
     enddo
   enddo
-  deallocate(ridx)
 end
 
 subroutine calc_rhok(tgvecs, gvecs, cmat,&
   ng, ndim, npw, norb,&
   rks)
+  ! calculate reciprocal space density of orbitals
+  !  orbitals coefficients are stored in cmat(norb, npw)
+  !  PW basis is specified by integer vectors gvecs(npw, ndim)
   implicit none
   integer, intent(in) :: tgvecs(ng, ndim)    ! target gvectors
   integer, intent(in) :: gvecs(npw, ndim)    ! PW basis
@@ -116,11 +112,28 @@ subroutine calc_rhok(tgvecs, gvecs, cmat,&
   complex*16, intent(out) :: rks(ng)         ! rhok at targets
 
   ! temporary variables
+  integer, allocatable :: ridx(:)
+  integer :: gmin(ndim), gmax(ndim), gs(ndim), ngs
   complex*16 rhok
   integer ig
 
+  ! get regular grid dimensions
+  gmin = minval(gvecs, dim=1)
+  gmax = maxval(gvecs, dim=1)
+  gs = gmax-gmin+1
+  ngs = product(gs)
 
+  ! create regular grid index map
+  allocate(ridx(ngs))
+  call map_gvectors_to_grid(gvecs, gmin, gs, ngs, npw, ndim, ridx)
+
+  ! calculate electron density
   do ig=1,ng
-    rks(ig) = rhok(tgvecs(ig,:), gvecs, cmat, ndim, npw, norb)
+    rks(ig) = rhok(tgvecs(ig,:), gvecs, cmat,&
+      gmin, gmax, gs, ridx,&
+      ndim, npw, norb, ngs)
   enddo
+
+  ! delete regular grid index map
+  deallocate(ridx)
 end
