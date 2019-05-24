@@ -5,7 +5,7 @@ from copy import copy
 class RegularGrid3D:
   def __init__(self, ng, ncol=1, dtype=float, gmin=None, dg=None):
     """Create a regular grid of scalar data.
-    The grid is defined by its (origin, spacing, # of points).
+    The grid is defined by its (gmin, dg, ng) = (origin, spacing, # of points).
     The scalar data are stored as columns.
 
     Args:
