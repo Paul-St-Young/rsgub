@@ -201,10 +201,10 @@ class RegularGrid3D:
       msg = 'refusing to overwrite %s;' % fcube
       msg += ' use force if you have to.'
       raise RuntimeError(msg)
-    from qharv.inspect.volumetric import write_gaussian_cube
+    from qharv.inspect.volumetric import write_gaussian_cube_text
     vals = self._cols[:, icol]
     vol = vals.reshape(self._ng)
     axes = np.diag(self._dg)
-    text = write_gaussian_cube(vol, axes, origin=self._gmin)
+    text = write_gaussian_cube_text(vol, axes, origin=self._gmin)
     with open(fcube, 'w') as f:
       f.write(text)
