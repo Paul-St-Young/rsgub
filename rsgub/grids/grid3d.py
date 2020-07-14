@@ -3,7 +3,7 @@ import numpy as np
 from copy import copy
 
 class RegularGrid3D:
-  def __init__(self, ng, ncol=1, dtype=float, gmin=None, dg=None):
+  def __init__(self, ng, ncol=1, dtype=float, gmin=None, dg=None, empty=np.nan):
     """Create a regular grid of scalar data.
     The grid is defined by its (gmin, dg, ng) = (origin, spacing, # of points).
     The scalar data are stored as columns.
@@ -14,6 +14,7 @@ class RegularGrid3D:
       dtype (type, optional): type of data columns, default is float
       gmin (np.array, optional): origin (3,) vector of floats, default is None
       dg (np.array, optional): spacing (3,) vector of floats, default is None
+      empty (np.array, optional): default value for empty grid points, default np.nan
     """
     self.dtype = dtype
     # define grid
@@ -24,7 +25,7 @@ class RegularGrid3D:
     self._ncol = ncol
     ntot = np.prod(ng)  # total number of grid points
     self._cols = np.zeros([ntot, ncol], dtype=dtype)
-    self._cols[:] = np.nan
+    self._cols[:] = empty
     # track filled data
     self._filled = np.zeros([ntot, ncol], dtype=bool)
   def _initialized(self):
